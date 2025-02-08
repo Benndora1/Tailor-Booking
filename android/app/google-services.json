@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "353326856521",
+    "project_id": "tailor-f929b",
+    "storage_bucket": "tailor-f929b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353326856521:android:d436591b1c768161e14298",
+        "android_client_info": {
+          "package_name": "com.example.tailor_booking_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1p_-VttTGbaG5JvAc4rFrINFK1vJiMxc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
