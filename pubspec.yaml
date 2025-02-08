@@ -1,44 +1,44 @@
 name: tailor_booking_app
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
+publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.0
-
+  sdk: '>=3.2.0 <4.0.0'  # Updated SDK constraint
 
 dependencies:
   flutter:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
-  firebase_core: ^2.4.0
-  firebase_auth: ^4.2.0
-  cloud_firestore: ^4.4.0
-  provider: ^6.1.2
-  google_maps_flutter: ^2.2.1
-  geolocator: ^9.0.2
-  intl: ^0.18.0
-  firebase_messaging: ^14.2.1
-  google_sign_in: ^6.1.0
-#  http: ^0.15.0
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_messaging: ^14.7.9
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  # Authentication
+  google_sign_in: ^6.2.1
+  auth_buttons: ^3.0.2
+
+  # UI Components
+  font_awesome_flutter: ^10.7.0
+  cupertino_icons: ^1.0.2
+
+  # State Management
+  provider: ^6.1.1
+
+  # Maps and Location
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+
+  # Utils
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-
-
+  flutter_lints: ^3.0.1
 
 flutter:
-
   uses-material-design: true
-
