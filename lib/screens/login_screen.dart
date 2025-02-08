@@ -34,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
       } else {
@@ -57,7 +56,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final user = await _authService.signInWithGoogle();
-
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
       } else {
@@ -153,6 +151,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   elevation: 1,
                 ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Register Button
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/register'), // Navigate to RegisterScreen
+              child: const Text(
+                "Don't have an account? Register",
+                style: TextStyle(color: Colors.blue),
               ),
             ),
           ],

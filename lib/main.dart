@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/home_screen.dart';
 
-void main() async {  // Changed to async
-  // Ensure Flutter bindings are initialized
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const TailorBookingApp());
 }
 
@@ -25,7 +23,12 @@ class TailorBookingApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginScreen(),
+      initialRoute: '/login', // Set the initial route to LoginScreen
+      routes: {
+        '/login': (context) => const LoginScreen(), // Route for LoginScreen
+        '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const HomeScreen()
+      },
     );
   }
 }

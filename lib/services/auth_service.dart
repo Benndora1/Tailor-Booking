@@ -1,6 +1,6 @@
+// services/auth_service.dart - KEEP ALL OF THIS
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -19,15 +19,15 @@ class AuthService {
     }
   }
 
-  // Create a new user with email and password
-  Future<User?> createUserWithEmailAndPassword(String email, String password) async {
+  // Register with email and password
+  Future<User?> registerWithEmailAndPassword(String email, String password) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       return _handleFirebaseAuthError(e.code);
     } catch (e) {
-      print('Error creating user: $e');
+      print('Error registering: $e');
       return null;
     }
   }
@@ -35,20 +35,13 @@ class AuthService {
   // Sign in with Google
   Future<User?> signInWithGoogle() async {
     try {
-      // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
-
-      // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      // Once signed in, return the User
       final userCredential = await _auth.signInWithCredential(credential);
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
@@ -63,7 +56,7 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
-      await _googleSignIn.signOut(); // Sign out from Google as well
+      await _googleSignIn.signOut();
     } catch (e) {
       print('Error signing out: $e');
     }
