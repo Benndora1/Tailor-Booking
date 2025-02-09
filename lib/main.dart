@@ -4,6 +4,8 @@ import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/admin_dashboard.dart'; // Import AdminDashboard
+import 'screens/tailor_dashboard.dart'; // Import TailorDashboard
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +25,13 @@ class TailorBookingApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/login', // Set the initial route to LoginScreen
+      initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginScreen(), // Route for LoginScreen
+        '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen()
+        '/home': (context) => const HomeScreen(),
+        '/admin-dashboard': (context) => const AdminDashboard(), // Admin route
+        '/tailor-dashboard': (context) => const TailorDashboard(), // Tailor route
       },
     );
   }

@@ -10,10 +10,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final AuthService _authService = AuthService(); // Ensure AuthService is properly imported
+  final AuthService _authService = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+
+  String _selectedRole = 'user'; // Default role is 'user'
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -33,9 +35,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
+      // Basic validation
+      if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+        setState(() {
+          _errorMessage = 'Please fill in all fields.';
+        });
+        return;
+      }
+
+      if (_passwordController.text != _confirmPasswordController.text) {
+        setState(() {
+          _errorMessage = 'Passwords do not match.';
+        });
+        return;
+      }
+
+      // Call registerWithEmailAndPassword with the selected role
       final user = await _authService.registerWithEmailAndPassword(
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        _selectedRole, // Pass the selected role
       );
 
       if (user != null) {
@@ -49,34 +68,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       setState(() {
         _errorMessage = 'An unexpected error occurred: $e';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  /// Handles registration with Google
-  Future<void> _registerWithGoogle() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final user = await _authService.signInWithGoogle();
-      if (user != null) {
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/home'); // Navigate to HomeScreen
-      } else {
-        setState(() {
-          _errorMessage = 'Google registration failed. Please try again.';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
       });
     } finally {
       setState(() {
@@ -133,6 +124,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
             ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _selectedRole,
+              items: const [
+                DropdownMenuItem(value: 'user', child: Text('Normal User')),
+                DropdownMenuItem(value: 'tailor', child: Text('Tailor')),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedRole = value ?? 'user'; // Default to 'user' if null
+                });
+              },
+              decoration: const InputDecoration(
+                labelText: 'Select Role',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 24),
             if (_errorMessage.isNotEmpty)
               Padding(
@@ -158,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: _isLoading ? null : _registerWithGoogle,
+              onPressed: _isLoading ? null : _authService.signInWithGoogle,
               icon: const FaIcon(
                 FontAwesomeIcons.google,
                 size: 20,
