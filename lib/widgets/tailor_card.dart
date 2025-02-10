@@ -1,17 +1,17 @@
-// widgets/tailor_card.dart
 import 'package:flutter/material.dart';
-import '../screens/booking_screen.dart';
 
 class TailorCard extends StatelessWidget {
   final String name;
   final String location;
   final List<String> services;
+  final VoidCallback? onTap; // Add this parameter
 
   const TailorCard({
     super.key,
     required this.name,
     required this.location,
     required this.services,
+    this.onTap, // Optional onTap callback
   });
 
   @override
@@ -25,21 +25,20 @@ class TailorCard extends StatelessWidget {
           children: [
             Text('Location: $location'),
             const SizedBox(height: 4),
-            Text('Services: ${services.join(", ")}'),
+            Wrap(
+              spacing: 4,
+              children: services
+                  .map((service) => Chip(label: Text(service)))
+                  .toList(),
+            ),
           ],
         ),
-        trailing: ElevatedButton(
-          onPressed: () {
-            // Navigate to booking screen
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BookingScreen(tailorName: name),
-              ),
-            );
-          },
-          child: const Text('Book Now'),
-        ),
+        trailing: onTap != null
+            ? IconButton(
+          icon: const Icon(Icons.arrow_forward),
+          onPressed: onTap, // Use the onTap callback if provided
+        )
+            : null,
       ),
     );
   }
