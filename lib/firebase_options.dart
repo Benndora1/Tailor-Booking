@@ -65,7 +65,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '353326856521',
     projectId: 'tailor-f929b',
     storageBucket: 'tailor-f929b.firebasestorage.app',
-    iosBundleId: 'com.example.tailorBookingApp',
+    iosBundleId: 'com.example.SewCraftApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -74,7 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '353326856521',
     projectId: 'tailor-f929b',
     storageBucket: 'tailor-f929b.firebasestorage.app',
-    iosBundleId: 'com.example.tailorBookingApp',
+    iosBundleId: 'com.example.SewCraftApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

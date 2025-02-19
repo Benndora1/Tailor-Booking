@@ -1,31 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/home_screen.dart' ;
+import 'screens/home_screen.dart' as home;
 import 'screens/admin_dashboard.dart';
 import 'screens/tailor_dashboard.dart';
-import 'screens/tailor_details_screen.dart' as details;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const TailorBookingApp());
+  runApp(const SewCraftApp());
 }
 
-class TailorBookingApp extends StatelessWidget {
-  const TailorBookingApp({super.key});
+class SewCraftApp extends StatelessWidget {
+  const SewCraftApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tailor Booking App',
+      title: 'SewCraftApp',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        // Add some visual improvements
         cardTheme: CardTheme(
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -41,57 +40,53 @@ class TailorBookingApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/login',
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/login':
-            return MaterialPageRoute(
-              builder: (context) => const LoginScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(), // Listen to auth state changes
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
             );
-          case '/register':
-            return MaterialPageRoute(
-              builder: (context) => const RegisterScreen(),
-            );
-          case '/home':
-            return MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            );
-          case '/admin-dashboard':
-            return MaterialPageRoute(
-              builder: (context) => const AdminDashboard(),
-            );
-          case '/tailor-dashboard':
-            return MaterialPageRoute(
-              builder: (context) => const TailorDashboard(),
-            );
-          case '/tailor-details':
-          // Handle the tailor details route with arguments
-            final tailorId = settings.arguments as String?;
-            if (tailorId == null || tailorId.isEmpty) {
-              return MaterialPageRoute(
-                builder: (context) => Scaffold(
-                  appBar: AppBar(title: const Text('Error')),
-                  body: const Center(
-                    child: Text('Invalid tailor ID'),
-                  ),
-                ),
-              );
-            }
-            return MaterialPageRoute(
-              builder: (context) => details.TailorDetailsScreen(tailorId: tailorId),
-            );
-          default:
-          // Handle unknown routes
-            return MaterialPageRoute(
-              builder: (context) => Scaffold(
-                appBar: AppBar(title: const Text('Error')),
-                body: const Center(
-                  child: Text('Page not found'),
-                ),
-              ),
-            );
-        }
-      },
+          }
+
+          final user = snapshot.data;
+
+          if (user == null) {
+            // No user is signed in, show LoginScreen
+            return const LoginScreen();
+          }
+
+          // User is signed in, fetch their role and navigate accordingly
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (!snapshot.hasData || !snapshot.data!.exists) {
+                // If user document doesn't exist, log them out
+                FirebaseAuth.instance.signOut();
+                return const LoginScreen();
+              }
+
+              final userData = snapshot.data!.data() as Map<String, dynamic>;
+              final role = userData['role'] ?? 'user';
+
+              switch (role) {
+                case 'admin':
+                  return const AdminDashboard(); // Redirect to AdminDashboard
+                case 'tailor':
+                  return const TailorDashboard(); // Redirect to TailorDashboard
+                default:
+                  return const home.HomeScreen(); // Redirect to HomeScreen for normal users
+              }
+            },
+          );
+        },
+      ),
     );
   }
 }

@@ -13,8 +13,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Stream<QuerySnapshot> _getTailors() {
     return FirebaseFirestore.instance
-        .collection('users')
-        .where('role', isEqualTo: 'tailor')
+        .collection('users') // Fetch from users collection
+        .where('role', isEqualTo: 'tailor') // Filter for tailors
         .snapshots();
   }
 
@@ -29,24 +29,25 @@ class _HomeScreenState extends State<HomeScreen> {
             Text('Available Tailors'),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const FaIcon(FontAwesomeIcons.rightFromBracket),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
+        actions: const [
+          // IconButton(
+          //   icon: const FaIcon(FontAwesomeIcons.rightFromBracket),
+          //   onPressed: () async {
+          //     await FirebaseAuth.instance.signOut(); // Sign out the user
+          //     Navigator.pushReplacementNamed(context, '/login'); // Redirect to login screen
+          //   },
+          // ),
         ],
       ),
+      drawer: _buildDrawer(), // Add a drawer
       body: StreamBuilder<QuerySnapshot>(
         stream: _getTailors(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (snapshot.hasError) {
+            print('Firestore Error: ${snapshot.error}');
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -62,9 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
           }
-
           final tailors = snapshot.data?.docs ?? [];
-
           if (tailors.isEmpty) {
             return const Center(
               child: Column(
@@ -81,13 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
           }
-
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: tailors.length,
             itemBuilder: (context, index) {
               final tailor = tailors[index].data() as Map<String, dynamic>;
-
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
                 child: ListTile(
@@ -100,14 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   title: Text(
                     tailor['name'] ?? 'Unknown',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 4),
                       Row(
                         children: [
                           const FaIcon(
@@ -148,6 +142,65 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  /// Build the drawer for navigation
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Row(
+              children: [
+                FaIcon(
+                  FontAwesomeIcons.shirt,
+                  size: 48,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 16),
+                Text(
+                  'SewCraftApp',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const FaIcon(FontAwesomeIcons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              Navigator.pushReplacementNamed(context, '/home'); // Navigate to HomeScreen
+            },
+          ),
+          ListTile(
+            leading: const FaIcon(FontAwesomeIcons.list),
+            title: const Text('My Bookings'), // Optional: Add a bookings page
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/bookings');
+            },
+          ),
+          ListTile(
+            leading: const FaIcon(FontAwesomeIcons.rightFromBracket),
+            title: const Text('Logout'),
+            onTap: () async {
+              Navigator.pop(context);
+              await FirebaseAuth.instance.signOut(); // Sign out the user
+              Navigator.pushReplacementNamed(context, '/login'); // Redirect to login screen
+            },
+          ),
+        ],
       ),
     );
   }
