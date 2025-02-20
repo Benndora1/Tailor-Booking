@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BookingScreen extends StatefulWidget {
   final String tailorName;
@@ -41,7 +42,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
       // Save booking to Firestore
       await FirebaseFirestore.instance.collection('bookings').add({
-        'tailorName': widget.tailorName,
+        'tailorId': '', // Replace with actual tailor ID
         'userId': userId,
         'date': date,
         'service': service,
@@ -67,7 +68,7 @@ class _BookingScreenState extends State<BookingScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Book Appointment'),
+        title: Text('Book Appointment with ${widget.tailorName}'), // Use tailorName
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -105,7 +106,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book with ${widget.tailorName}'),
+        title: Text('Book with ${widget.tailorName}'), // Use tailorName
       ),
       body: Center(
         child: ElevatedButton(

@@ -131,36 +131,35 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
           ListTile(
-            leading: const FaIcon(FontAwesomeIcons.users), // Font Awesome users icon
+            leading: const FaIcon(FontAwesomeIcons.users),
             title: const Text('User Management'),
             onTap: () {
-              Navigator.pop(context); // Close the drawer
-              // This is already the current screen, so no navigation needed
+              Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: const FaIcon(FontAwesomeIcons.userCheck), // Font Awesome approval icon
+            leading: const FaIcon(FontAwesomeIcons.userCheck),
             title: const Text('Tailor Approval'),
             onTap: () {
               Navigator.pop(context); // Close the drawer
-              Navigator.pushNamed(context, '/tailor-approval'); // Navigate to TailorApprovalScreen
+              Navigator.pushNamed(context, '/tailor-approval');
             },
           ),
           ListTile(
-            leading: const FaIcon(FontAwesomeIcons.chartBar), // Font Awesome analytics icon
+            leading: const FaIcon(FontAwesomeIcons.chartBar),
             title: const Text('Analytics'),
             onTap: () {
               Navigator.pop(context); // Close the drawer
-              Navigator.pushNamed(context, '/analytics'); // Navigate to AnalyticsScreen
+              Navigator.pushNamed(context, '/analytics');
             },
           ),
           ListTile(
-            leading: FaIcon(FontAwesomeIcons.signOutAlt), // Font Awesome logout icon
+            leading: FaIcon(FontAwesomeIcons.signOutAlt),
             title: const Text('Logout'),
             onTap: () async {
               Navigator.pop(context); // Close the drawer
               await _authService.signOut(); // Sign out the admin
-              Navigator.pushReplacementNamed(context, '/login'); // Redirect to login screen
+              Navigator.pushReplacementNamed(context, '/login');
             },
           ),
         ],

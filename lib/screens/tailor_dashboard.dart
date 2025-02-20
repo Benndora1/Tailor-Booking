@@ -21,7 +21,22 @@ class TailorDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SewCraft Tailor Dashboard'),
+        title: const Text('Tailor Dashboard'),
+        actions: const [
+          // IconButton(
+          //   icon: const FaIcon(FontAwesomeIcons.pen),
+          //   onPressed: () => _editProfile(context),
+          //   tooltip: 'Edit Profile',
+          // ),
+          // IconButton(
+          //   icon: const FaIcon(FontAwesomeIcons.signOutAlt),
+          //   onPressed: () async {
+          //     await FirebaseAuth.instance.signOut(); // Sign out the tailor
+          //     Navigator.pushReplacementNamed(context, '/login'); // Redirect to login screen
+          //   },
+          //   tooltip: 'Logout',
+          // ),
+        ],
       ),
       drawer: _buildDrawer(context, user.uid), // Add the drawer
       body: Padding(
@@ -36,7 +51,7 @@ class TailorDashboard extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _getBookings(user.uid),
+                stream: _getBookings(user.uid), // Fetch bookings for the logged-in tailor
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -69,8 +84,8 @@ class TailorDashboard extends StatelessWidget {
                             size: 48,
                             color: Colors.grey,
                           ),
-                          const SizedBox(height: 16),
-                          const Text('No bookings yet'),
+                          SizedBox(height: 16),
+                          Text('No bookings yet'),
                         ],
                       ),
                     );
@@ -209,7 +224,7 @@ class TailorDashboard extends StatelessWidget {
           ),
           ListTile(
             leading: const FaIcon(FontAwesomeIcons.chartBar),
-            title: const Text('View Analytics'),
+            title: const Text('View Analytics'), // Optional: Add analytics screen
             onTap: () {
               Navigator.pop(context); // Close the drawer
               Navigator.pushNamed(context, '/analytics'); // Navigate to analytics
@@ -247,5 +262,22 @@ class TailorDashboard extends StatelessWidget {
     } catch (e) {
       print('Error updating booking status: $e');
     }
+  }
+
+  /// Show profile editing dialog
+  void _editProfile(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Profile'),
+        content: const Text('This feature is coming soon!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }

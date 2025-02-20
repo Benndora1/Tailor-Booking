@@ -12,12 +12,12 @@ class AnalyticsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Analytics'),
         leading: IconButton(
-          icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Font Awesome back arrow
-          onPressed: () => Navigator.pop(context), // Go back to AdminDashboard
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Add back arrow
+          onPressed: () => Navigator.pop(context), // Navigate back
         ),
       ),
       body: const Center(
-        child: Text('This feature is coming soon!'),
+        child: Text('This feature is coming soon!'), // Placeholder message
       ),
     );
   }
