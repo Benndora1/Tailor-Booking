@@ -16,6 +16,7 @@ class Tailor {
     required this.services,
     required this.rating,
     required this.status,
+   
   });
 
   factory Tailor.fromMap(String id, Map<String, dynamic> map) {

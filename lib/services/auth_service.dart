@@ -1,48 +1,121 @@
+// services/auth_service.dart
+
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Sign in with email and password
-  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+  // Register with email and password
+  Future<User?> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String role,
+    required String name,
+    String? phone,
+    String? bio,
+  }) async {
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      return userCredential.user;
-    } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthError(e.code);
+      // Create user in Firebase Auth
+      final UserCredential result = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final User? user = result.user;
+
+      if (user != null) {
+        // Create user record in Firestore
+        await _db.collection('users').doc(user.uid).set({
+          'email': email,
+          'name': name,
+          'role': role == 'tailor' ? 'user' : role, // Tailors start as regular users until approved
+          'createdAt': FieldValue.serverTimestamp(),
+          'phone': phone ?? '',
+        });
+
+        // If registering as a tailor, create a tailor record with pending status
+        if (role == 'tailor') {
+          await _db.collection('tailors').doc(user.uid).set({
+            'userId': user.uid,
+            'email': email,
+            'name': name,
+            'phone': phone ?? '',
+            'bio': bio ?? '',
+            'status': 'pending', // Start with pending status
+            'specialties': [],
+            'address': '',
+            'rating': 0,
+            'reviewCount': 0,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      return user;
     } catch (e) {
-      print('Error signing in: $e');
-      return null;
+      print('Error registering user: $e');
+      rethrow;
     }
   }
 
-  // Register with email and password
-  Future<User?> registerWithEmailAndPassword(String email, String password, String role) async {
+  // Sign in with email and password
+  Future<Map<String, dynamic>> signInWithEmailAndPassword(String email, String password) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      final user = userCredential.user;
+      final UserCredential result = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final User? user = result.user;
 
       if (user != null) {
-        // Save user data to Firestore with the specified role
-        await _db.collection('users').doc(user.uid).set({
-          'email': email,
-          'name': '', // Can be updated later
-          'role': role, // Assign the role
-          'created_at': FieldValue.serverTimestamp(),
-        });
-        print('User registered with role: $role');
-        return user;
+        // Get user data from Firestore
+        final userDoc = await _db.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          throw FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'User data not found in database.',
+          );
+        }
+
+        final userData = userDoc.data()!;
+        final role = userData['role'] as String? ?? 'user';
+
+        // If user is a tailor, check tailor status
+        if (role == 'tailor') {
+          final tailorDoc = await _db.collection('tailors').doc(user.uid).get();
+
+          if (tailorDoc.exists) {
+            final tailorData = tailorDoc.data()!;
+            final tailorStatus = tailorData['status'] as String? ?? 'pending';
+
+            return {
+              'user': user,
+              'role': role,
+              'tailorStatus': tailorStatus,
+            };
+          }
+        }
+
+        return {
+          'user': user,
+          'role': role,
+          'tailorStatus': null,
+        };
+      } else {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'No user found for this email.',
+        );
       }
-      return null;
-    } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthError(e.code);
     } catch (e) {
-      print('Error registering: $e');
-      return null;
+      print('Error signing in: $e');
+      rethrow;
     }
   }
 
@@ -50,36 +123,38 @@ class AuthService {
   Future<User?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+
+      if (googleUser == null) {
+        // User canceled the sign-in process
+        return null;
+      }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
+      final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await _auth.signInWithCredential(credential);
-      final user = userCredential.user;
+      final UserCredential result = await _auth.signInWithCredential(credential);
+      final User? user = result.user;
 
       if (user != null) {
-        // Check if the user exists in Firestore
+        // Check if user already exists in Firestore
         final userDoc = await _db.collection('users').doc(user.uid).get();
 
         if (!userDoc.exists) {
-          // If the user doesn't exist, create a new document with default role 'user'
+          // Create new user record if this is first sign-in
           await _db.collection('users').doc(user.uid).set({
             'email': user.email,
-            'name': user.displayName ?? '',
-            'role': 'user', // Default role for Google users
-            'created_at': FieldValue.serverTimestamp(),
+            'name': user.displayName,
+            'role': 'user', // Default role for Google sign-in
+            'createdAt': FieldValue.serverTimestamp(),
+            'photoURL': user.photoURL,
           });
-          print('New Google user registered with role: user');
         }
-        return user;
       }
-      return null;
-    } on FirebaseAuthException catch (e) {
-      return _handleFirebaseAuthError(e.code);
+
+      return user;
     } catch (e) {
       print('Error signing in with Google: $e');
       return null;
@@ -89,45 +164,41 @@ class AuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
       await _googleSignIn.signOut();
+      await _auth.signOut();
     } catch (e) {
       print('Error signing out: $e');
+      rethrow;
     }
   }
 
-  // Handle Firebase Auth errors
-  User? _handleFirebaseAuthError(String errorCode) {
-    switch (errorCode) {
-      case 'invalid-email':
-        print('The email address is malformed.');
-        break;
-      case 'user-disabled':
-        print('The user account has been disabled.');
-        break;
-      case 'user-not-found':
-        print('There is no user record corresponding to this identifier.');
-        break;
-      case 'wrong-password':
-        print('The password is invalid or the user does not have a password.');
-        break;
-      default:
-        print('An undefined error occurred: $errorCode');
-    }
-    return null;
+  // Get current user
+  User? getCurrentUser() {
+    return _auth.currentUser;
   }
 
-  /// Fetch the user's role from Firestore
-  Future<String> getUserRole(String userId) async {
+  // Get user role from Firestore
+  Future<String> getUserRole(String uid) async {
     try {
-      final userDoc = await _db.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        return userDoc.data()?['role'] ?? 'user'; // Default to 'user' if role is missing
-      }
-      return 'user'; // Default to 'user' if no document exists
+      final doc = await _db.collection('users').doc(uid).get();
+      return (doc.data()?['role'] as String?) ?? 'user';
     } catch (e) {
-      print('Error fetching user role: $e');
-      return 'user'; // Default to 'user' on error
+      print('Error getting user role: $e');
+      return 'user'; // Default to user role if there's an error
+    }
+  }
+
+  // Check if user is admin
+  Future<bool> isAdmin() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final userDoc = await _db.collection('users').doc(user.uid).get();
+      return userDoc.data()?['role'] == 'admin';
+    } catch (e) {
+      print('Error checking admin status: $e');
+      return false;
     }
   }
 }
