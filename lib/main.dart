@@ -8,11 +8,13 @@ import 'screens/register_screen.dart' show RegisterScreen;
 import 'screens/home_screen.dart' as home;
 import 'screens/tailor_dashboard.dart';
 import 'screens/admin_dashboard.dart';
-import 'screens/booking_screen.dart' as bookings;
-import 'screens/booking_screen.dart'; // Import the BookingsScreen listing
+import 'screens/booking_screen.dart';
+import 'screens/bookings_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/analytics_screen.dart';
 import 'screens/tailor_profile_screen.dart'; // Import TailorProfileScreen
+import 'screens/contact_screen.dart'; // Import Contact/Messaging screen
+import 'screens/chats_screen.dart'; // Import Chats list screen
 
 // Import the admin screens
 import 'screens/user_management.dart';
@@ -122,7 +124,7 @@ class SewCraftApp extends StatelessWidget {
         // Bookings routes
           case '/bookings':
           // Show all bookings for the current user (either as customer or tailor)
-            return MaterialPageRoute(builder: (context) => const BookingScreen());
+            return MaterialPageRoute(builder: (context) => const BookingsScreen());
 
           case '/book-appointment':
           // Route for creating a new booking with a specific tailor
@@ -131,17 +133,17 @@ class SewCraftApp extends StatelessWidget {
               return MaterialPageRoute(builder: (context) => const home.HomeScreen());
             }
             return MaterialPageRoute(
-              builder: (context) => bookings.BookingScreen(tailorId: tailorId),
+              builder: (context) => BookingScreen(tailorId: tailorId),
             );
 
           case '/reschedule-booking':
           // Route for rescheduling an existing booking
             final bookingId = settings.arguments as String?;
             if (bookingId == null || bookingId.isEmpty) {
-              return MaterialPageRoute(builder: (context) => const BookingScreen());
+              return MaterialPageRoute(builder: (context) => const BookingsScreen());
             }
             return MaterialPageRoute(
-              builder: (context) => bookings.BookingScreen(
+              builder: (context) => BookingScreen(
                 bookingId: bookingId,
                 isRescheduling: true,
               ),
@@ -176,23 +178,39 @@ class SewCraftApp extends StatelessWidget {
           // Route for reviewing a completed booking
             final bookingId = settings.arguments as String?;
             if (bookingId == null || bookingId.isEmpty) {
-              return MaterialPageRoute(builder: (context) => const BookingScreen());
+              return MaterialPageRoute(builder: (context) => const BookingsScreen());
             }
             // You'll need to create a ReviewScreen component
             // For now, just return to BookingsScreen
-            return MaterialPageRoute(builder: (context) => const BookingScreen());
+            return MaterialPageRoute(builder: (context) => const BookingsScreen());
 
+        // Contact and Messaging routes
           case '/contact-tailor':
           // Route for contacting a tailor
             final tailorId = settings.arguments as String?;
             if (tailorId == null || tailorId.isEmpty) {
               return MaterialPageRoute(builder: (context) => const home.HomeScreen());
             }
-            // You'll need to create a ContactScreen
-            // For now, just show the tailor profile
             return MaterialPageRoute(
-              builder: (context) => TailorProfileScreen(tailorId: tailorId),
+              builder: (context) => ContactScreen(tailorId: tailorId),
             );
+
+          case '/contact-with-booking':
+          // Route for contacting about a specific booking
+            final args = settings.arguments as Map<String, String>?;
+            if (args == null || args['tailorId'] == null) {
+              return MaterialPageRoute(builder: (context) => const BookingsScreen());
+            }
+            return MaterialPageRoute(
+              builder: (context) => ContactScreen(
+                tailorId: args['tailorId']!,
+                bookingId: args['bookingId'],
+              ),
+            );
+
+          case '/chats':
+          // Route for viewing all chats
+            return MaterialPageRoute(builder: (context) => const ChatsScreen());
 
           default:
           // Redirect to HomeScreen for undefined routes
